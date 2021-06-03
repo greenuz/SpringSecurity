@@ -1,10 +1,13 @@
 package com.greenux.security.config.oauth;
 
+import java.util.Map;
+
 import javax.swing.plaf.synth.SynthScrollBarUI;
 
 import com.greenux.security.config.auth.PrincipalDetails;
 import com.greenux.security.config.oauth.provider.FacebookUserInfo;
 import com.greenux.security.config.oauth.provider.GoogleUserInfo;
+import com.greenux.security.config.oauth.provider.NaverUserInfo;
 import com.greenux.security.config.oauth.provider.OAuth2UserInfo;
 import com.greenux.security.model.User;
 import com.greenux.security.repository.UserRepository;
@@ -38,6 +41,7 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService{
         OAuth2User oauth2User = super.loadUser(userRequest);
         System.out.println("OAuth getAttributes: " + oauth2User.getAttributes());
 
+        System.out.println(oauth2User.getAttributes().get("response"));
 
         OAuth2UserInfo oAuth2UserInfo = null;
         if(userRequest.getClientRegistration().getRegistrationId().equals("google")){
@@ -46,15 +50,19 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService{
         }else if(userRequest.getClientRegistration().getRegistrationId().equals("facebook")){
             System.out.println("facebook login Request");
             oAuth2UserInfo = new FacebookUserInfo(oauth2User.getAttributes()); 
+        }else if(userRequest.getClientRegistration().getRegistrationId().equals("naver")){
+            System.out.println("naver login Request");
+            System.out.println("thishtsi" + oauth2User.getAttributes().get("response"));
+            oAuth2UserInfo = new NaverUserInfo((Map)oauth2User.getAttributes().get("response")); 
         }else{
-            System.out.println("we support only google & facebook");
+            System.out.println("we support only google & facebook & naver");
         }
 
 
         String provider = oAuth2UserInfo.getProvider(); //google
         String providerid = oAuth2UserInfo.getProviderId();
         String username = provider+"_"+providerid; // google_1981023981029380~~~~~~
-        String provideremail = oauth2User.getAttribute("email");
+        String provideremail = oAuth2UserInfo.getEmail();
         String password = bCryptPasswordEncoder.encode("greenux");
         String role = "ROLE_USER";
 
